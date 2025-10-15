@@ -28,9 +28,16 @@ class _ShoppingCartState extends State<ShoppingCart> {
 
   void addItem(String id, String name, double price, {double discount = 0.0}) {
     setState(() {
-      _items.add(
-        CartItem(id: id, name: name, price: price, discount: discount),
-      );
+      if (_items.any((item) => item.id == id)) {
+        updateQuantity(
+          id,
+          _items.firstWhere((item) => item.id == id).quantity + 1,
+        );
+      } else {
+        _items.add(
+          CartItem(id: id, name: name, price: price, discount: discount),
+        );
+      }
     });
   }
 
@@ -70,13 +77,13 @@ class _ShoppingCartState extends State<ShoppingCart> {
   double get totalDiscount {
     double discount = 0;
     for (var item in _items) {
-      discount += item.discount * item.quantity;
+      discount += item.price * item.discount * item.quantity;
     }
     return discount;
   }
 
   double get totalAmount {
-    return subtotal + totalDiscount;
+    return subtotal - totalDiscount;
   }
 
   int get totalItems {
@@ -108,6 +115,11 @@ class _ShoppingCartState extends State<ShoppingCart> {
               onPressed: () =>
                   addItem('1', 'Apple iPhone', 999.99, discount: 0.1),
               child: const Text('Add iPhone Again'),
+            ),
+            ElevatedButton(
+              onPressed: () =>
+                  addItem('4', 'Free Sample', 50.00, discount: 1.0),
+              child: const Text('Add Free Sample'),
             ),
           ],
         ),
