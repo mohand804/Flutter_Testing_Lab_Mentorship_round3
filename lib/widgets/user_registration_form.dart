@@ -17,27 +17,40 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
   bool _isLoading = false;
   String _message = '';
 
-  bool isValidEmail(String email) {
-    return email.contains('@');
+  bool emailValidator(String? value) {
+    if (value == null || value.isEmpty) {
+      return false;
+    }
+
+    final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    return regex.hasMatch(value);
   }
 
-  bool isValidPassword(String password) {
+  bool passwordValidator(String? value) {
+    if (value == null || value.isEmpty) {
+      return false;
+    }
+    if (value.length < 8) {
+      return false;
+    }
     return true;
   }
 
   Future<void> _submitForm() async {
-    setState(() {
-      _isLoading = true;
-      _message = '';
-    });
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+        _message = '';
+      });
 
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
+      // Simulate API call
+      await Future.delayed(const Duration(seconds: 2));
 
-    setState(() {
-      _isLoading = false;
-      _message = 'Registration successful!';
-    });
+      setState(() {
+        _isLoading = false;
+        _message = 'Registration successful!';
+      });
+    }
   }
 
   @override
@@ -50,6 +63,7 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TextFormField(
+              key: const Key('nameField'),
               controller: _nameController,
               decoration: const InputDecoration(
                 labelText: 'Full Name',
@@ -67,6 +81,7 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
             ),
             const SizedBox(height: 16),
             TextFormField(
+              key: const Key('emailField'),
               controller: _emailController,
               decoration: const InputDecoration(
                 labelText: 'Email',
@@ -77,7 +92,7 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
                 if (value == null || value.isEmpty) {
                   return 'Please enter your email';
                 }
-                if (!isValidEmail(value)) {
+                if (!emailValidator(value)) {
                   return 'Please enter a valid email';
                 }
                 return null;
@@ -85,6 +100,7 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
             ),
             const SizedBox(height: 16),
             TextFormField(
+              key: const Key('passwordField'),
               controller: _passwordController,
               decoration: const InputDecoration(
                 labelText: 'Password',
@@ -96,7 +112,7 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
                 if (value == null || value.isEmpty) {
                   return 'Please enter a password';
                 }
-                if (!isValidPassword(value)) {
+                if (!passwordValidator(value)) {
                   return 'Password is too weak';
                 }
                 return null;
@@ -104,6 +120,7 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
             ),
             const SizedBox(height: 16),
             TextFormField(
+              key: const Key('confirmPasswordField'),
               controller: _confirmPasswordController,
               decoration: const InputDecoration(
                 labelText: 'Confirm Password',
@@ -122,6 +139,7 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
+              key: const Key('registerButton'),
               onPressed: _isLoading ? null : _submitForm,
               child: _isLoading
                   ? const CircularProgressIndicator()
