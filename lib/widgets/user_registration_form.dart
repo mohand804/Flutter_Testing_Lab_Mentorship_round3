@@ -13,40 +13,44 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _nameController = TextEditingController();
-  
+
   bool _isLoading = false;
   String _message = '';
 
-  // BUG: Email validation is completely wrong
-  bool isValidEmail(String email) {
-    return email.contains('@'); // Too simple! Accepts invalid emails like "a@" or "@b"
+  bool emailValidator(String? value) {
+    if (value == null || value.isEmpty) {
+      return false;
+    }
+
+    final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    return regex.hasMatch(value);
   }
 
-  // BUG: Password validation missing entirely
-  bool isValidPassword(String password) {
-    return true; // Always returns true! No strength checking
+  bool passwordValidator(String? value) {
+    if (value == null || value.isEmpty) {
+      return false;
+    }
+    if (value.length < 8) {
+      return false;
+    }
+    return true;
   }
 
-  // BUG: Form submission doesn't validate properly
   Future<void> _submitForm() async {
-    setState(() {
-      _isLoading = true;
-      _message = '';
-    });
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+        _message = '';
+      });
 
-    // BUG: No form validation before submission
-    String email = _emailController.text;
-    String password = _passwordController.text;
-    String confirmPassword = _confirmPasswordController.text;
-    String name = _nameController.text;
+      // Simulate API call
+      await Future.delayed(const Duration(seconds: 2));
 
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
-
-    setState(() {
-      _isLoading = false;
-      _message = 'Registration successful!'; // Always successful, even with empty fields!
-    });
+      setState(() {
+        _isLoading = false;
+        _message = 'Registration successful!';
+      });
+    }
   }
 
   @override
@@ -59,6 +63,7 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TextFormField(
+              key: const Key('nameField'),
               controller: _nameController,
               decoration: const InputDecoration(
                 labelText: 'Full Name',
@@ -76,6 +81,7 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
             ),
             const SizedBox(height: 16),
             TextFormField(
+              key: const Key('emailField'),
               controller: _emailController,
               decoration: const InputDecoration(
                 labelText: 'Email',
@@ -86,7 +92,7 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
                 if (value == null || value.isEmpty) {
                   return 'Please enter your email';
                 }
-                if (!isValidEmail(value)) {
+                if (!emailValidator(value)) {
                   return 'Please enter a valid email';
                 }
                 return null;
@@ -94,6 +100,7 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
             ),
             const SizedBox(height: 16),
             TextFormField(
+              key: const Key('passwordField'),
               controller: _passwordController,
               decoration: const InputDecoration(
                 labelText: 'Password',
@@ -105,7 +112,7 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
                 if (value == null || value.isEmpty) {
                   return 'Please enter a password';
                 }
-                if (!isValidPassword(value)) {
+                if (!passwordValidator(value)) {
                   return 'Password is too weak';
                 }
                 return null;
@@ -113,6 +120,7 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
             ),
             const SizedBox(height: 16),
             TextFormField(
+              key: const Key('confirmPasswordField'),
               controller: _confirmPasswordController,
               decoration: const InputDecoration(
                 labelText: 'Confirm Password',
@@ -131,6 +139,7 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
+              key: const Key('registerButton'),
               onPressed: _isLoading ? null : _submitForm,
               child: _isLoading
                   ? const CircularProgressIndicator()
@@ -142,7 +151,9 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
                 child: Text(
                   _message,
                   style: TextStyle(
-                    color: _message.contains('successful') ? Colors.green : Colors.red,
+                    color: _message.contains('successful')
+                        ? Colors.green
+                        : Colors.red,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
